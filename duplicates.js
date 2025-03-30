@@ -90,13 +90,19 @@ class DuplicateBookmarkManager {
     }
 
     async getAllBookmarks() {
-        return new Promise((resolve) => {
-            chrome.bookmarks.getTree((bookmarkTree) => {
-                const bookmarks = [];
-                this.traverseBookmarks(bookmarkTree[0], bookmarks);
-                resolve(bookmarks);
-            });
-        });
+        try {
+            // 直接使用await替代Promise构造器
+            const bookmarkTree = await browser.bookmarks.getTree();
+            const bookmarks = [];
+            
+            this.traverseBookmarks(bookmarkTree[0], bookmarks);
+            
+            return bookmarks;
+        } catch (error) {
+            console.error("获取书签失败:", error);
+            // 保持与原始Promise reject行为一致
+            throw error; 
+        }
     }
 
     traverseBookmarks(node, bookmarks, path = []) {

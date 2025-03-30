@@ -1281,21 +1281,30 @@ async function updateDomainAnalysis(profileEl, stats) {
 
 // 修改获取网站favicon的辅助函数
 async function getFavicon(domain) {
+    // 优先尝试新Favicon服务
     try {
-        // 首先尝试从 Google Favicon 服务获取
+        const faviconImUrl = `https://favicon.im/${domain}?sz=32`;
+        const responseIm = await fetch(faviconImUrl);
+        if (responseIm.ok) {
+            return faviconImUrl;
+        }
+    } catch (error) {
+        console.log('Favicon.im service failed:', error);
+    }
+
+    // 其次尝试Google服务
+    try {
         const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-        const response = await fetch(googleFaviconUrl);
-        
-        if (response.ok) {
+        const responseGoogle = await fetch(googleFaviconUrl);
+        if (responseGoogle.ok) {
             return googleFaviconUrl;
         }
-        
-        // 如果获取失败，回退到 Chrome 内置服务
-        return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=https://${domain}&size=32`;
     } catch (error) {
-        console.warn('Error fetching Google favicon, falling back to Chrome favicon:', error);
-        return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=https://${domain}&size=32`;
+        console.log('Google favicon service failed:', error);
     }
+
+    // 全部失败后回退到Chrome内置服务
+    return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=https://${domain}&size=32`;
 }
 
 // 书签分类相关配置和函数

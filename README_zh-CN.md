@@ -6,6 +6,8 @@
 
 让书签管理变得轻松愉快！一只可爱的懒猫助手，帮你智能清理和整理浏览器书签。
 
+> 如果你正在寻找可用的 `Firefox` 扩展，请考虑使用 [Meow](https://github.com/waahah/Meow)。
+
 ![](https://raw.githubusercontent.com/Alanrk/blogimg/main/Snipaste_2025-01-15_15-00-14.png)
 
 ![](https://raw.githubusercontent.com/Alanrk/blogimg/main/Snipaste_2025-01-15_15-00-29.png)

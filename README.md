@@ -5,6 +5,8 @@ Project Website: https://www.ainewtab.app/LazyCat-Bookmark-Cleaner/en/
 
 Make bookmark management easy and enjoyable! A cute lazy cat assistant helps you intelligently clean and organize your browser bookmarks.
 
+> If you're looking for available `Firefox` extensions, consider using [Meow](https://github.com/waahah/Meow)
+
 ![](https://raw.githubusercontent.com/Alanrk/blogimg/main/Snipaste_2025-01-15_14-50-04.png)
 
 ![](https://raw.githubusercontent.com/Alanrk/blogimg/main/Snipaste_2025-01-15_14-52-53.png)
