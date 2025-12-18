@@ -119,9 +119,9 @@
             <iframe id="preview-frame" class="preview-frame"></iframe>
         </div>
 
-        <div id="timeout-dialog" class="dialog-overlay">
+        <div id="setting-dialog" class="dialog-overlay">
             <div class="dialog">
-                <h3 data-i18n="setTimeoutTitle">设置超时时间</h3>
+                <h3 data-i18n="setTimeoutTitle">设置</h3>
                 
                 <div class="setting-item">
                     <label for="timeout-value" data-i18n="timeoutLabel" class="setting-label">
@@ -150,6 +150,35 @@
                         <li data-i18n="timeoutTip2">• 网络较差时建议设置更长时间</li>
                         <li data-i18n="timeoutTip3">• 链接较多时可以适当缩短时间</li>
                     </ul>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label" data-i18n="urlMatchModeLabel">URL匹配模式：</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="urlMatchMode" value="full" checked>
+                            <span data-i18n="urlMatchModeFull">完整URL匹配</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="urlMatchMode" value="domain">
+                            <span data-i18n="urlMatchModeDomain">仅域名匹配</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label" data-i18n="whitelistLabel">白名单URL：</label>
+                    <div class="whitelist-input-container">
+                        <textarea id="whitelist-urls" class="whitelist-input" rows="3" placeholder="输入要忽略的URL，使用逗号分隔。仅支持*通配符，例如：*.example.com, *.test.com"></textarea>
+                    </div>
+                    <div class="whitelist-explanation">
+                        <p data-i18n="whitelistExplanation">
+                            白名单中的URL将被忽略检测。支持以下格式：
+                        </p>
+                        <ul class="whitelist-tips">
+                            <li data-i18n="whitelistTip2">• 通配符：*.example.com</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="dialog-actions">

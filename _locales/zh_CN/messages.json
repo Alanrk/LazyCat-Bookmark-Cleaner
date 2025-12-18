@@ -504,7 +504,7 @@
     "description": "Text showing how many more domains exist"
   },
   "setTimeoutTitle": {
-    "message": "设置超时时间"
+    "message": "设置"
   },
   "timeoutLabel": {
     "message": "请设置每个链接的检查超时时间（秒）："
@@ -520,6 +520,24 @@
   },
   "timeoutTip3": {
     "message": "• 链接较多时可以适当缩短时间"
+  },
+  "urlMatchModeLabel": {
+    "message": "URL匹配模式："
+  },
+  "urlMatchModeFull": {
+    "message": "完整URL匹配"
+  },
+  "urlMatchModeDomain": {
+    "message": "仅域名匹配"
+  },
+  "whitelistLabel": {
+    "message": "白名单URL："
+  },
+  "whitelistExplanation": {
+    "message": "白名单中的URL将被忽略检测。支持以下格式："
+  },
+  "whitelistTip2": {
+    "message": "• 通配符：*.example.com"
   },
   "scanSettings": {
     "message": "扫描设置"

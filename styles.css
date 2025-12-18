@@ -144,7 +144,7 @@ h1 {
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: var(--system-red);
+    accent-color: #10b981;
 }
 
 .bookmark-title {
@@ -486,30 +486,30 @@ h1 {
 }
 
 .secondary-button {
-    color: #10b981;
+    color: #ff0000;
     border: none;
 }
 
 .secondary-button:hover {
     color: white;
-    background: #10b981;
+    background: #ff0000;
 }
 
 .secondary-button:active {
-    background: #10b981;
+    background: #ff0000;
     color: white;
 }
 
 /* 危险按钮样式 - 使用更高的优先级 */
 .button.danger-button {
-    background: #10b981 ;
+    background: #ff0000 ;
     color: #ffffff;
 }
 
 /* 危险按钮禁用状态 */
 .button.danger-button[disabled] {
     background: #ffffff;
-    color: #10b981;
+    color: #ff0000;
     cursor: not-allowed;
     pointer-events: none;
 }
@@ -536,8 +536,8 @@ h1 {
 
 /* 选中状态的结果项样式 */
 .result-item.selected {
-    background: rgba(108, 172, 153, 0.1);
-    border-color: #10b981;
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #ff0000;
 }
 
 /* 更新结果容器样式 */
@@ -2095,9 +2095,75 @@ h1 {
     padding: 24px;
     width: 90%;
     max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(20px);
+}
+
+@media (max-width: 768px) {
+    .dialog {
+        padding: 20px;
+        width: 95%;
+        max-width: none;
+    }
+
+    .dialog h3 {
+        font-size: 16px;
+    }
+
+    .setting-item {
+        margin: 16px 0;
+        gap: 8px;
+    }
+
+    label.setting-label {
+        font-size: 13px;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .radio-label {
+        padding: 6px 12px;
+    }
+
+    .radio-label span {
+        font-size: 13px;
+    }
+
+    .timeout-display {
+        font-size: 28px;
+        margin: 12px 0;
+    }
+
+    .timeout-unit {
+        font-size: 14px;
+    }
+
+    .whitelist-input {
+        padding: 3px;
+        font-size: 13px;
+        min-height: 60px;
+    }
+
+    .whitelist-explanation,
+    .timeout-explanation {
+        font-size: 13px;
+    }
+
+    .dialog-actions {
+        margin-top: 16px;
+    }
+
+    .dialog-actions button {
+        padding: 6px 16px;
+        font-size: 14px;
+    }
 }
 
 /* 对话框标题 */
@@ -2117,6 +2183,43 @@ h1 {
 }
 label.setting-label {
     font-size: 14px;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    margin-top: 12px;
+    background: var(--card-background);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: transparent;
+    flex: 1;
+}
+
+.radio-label input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.radio-label span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d1d1f;
+    flex: 1;
 }
 
 /* 滑块样式 */
@@ -2153,6 +2256,44 @@ input[type="range"]::-webkit-slider-thumb:hover {
     justify-content: flex-end;
     gap: 12px;
     margin-top: 24px;
+}
+
+.whitelist-input-container {
+    margin-top: 8px;
+}
+
+.whitelist-input {
+    width: 100%;
+    padding: 3px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--card-background);
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.whitelist-input:focus {
+    outline: none;
+    border-color: var(--system-green);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.whitelist-explanation {
+    color: var(--system-gray);
+    font-size: 14px;
+}
+
+.whitelist-tips {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.whitelist-tips li {
+    margin-bottom: 4px;
+    color: var(--system-gray);
 }
 
 /* 按钮基础样式 */

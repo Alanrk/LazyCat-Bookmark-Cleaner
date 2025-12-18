@@ -544,7 +544,7 @@
     "message": "Lazy Cat Bookmark Cleaner"
   },
   "setTimeoutTitle": {
-    "message": "Set Timeout"
+    "message": "Set Setting"
   },
   "timeoutLabel": {
     "message": "Set timeout duration for each link check (seconds):"
@@ -560,6 +560,24 @@
   },
   "timeoutTip3": {
     "message": "• Can be shortened when checking many links"
+  },
+  "urlMatchModeLabel": {
+    "message": "URL Matching Pattern"
+  },
+  "urlMatchModeFull": {
+    "message": "Full URL Matching"
+  },
+  "urlMatchModeDomain": {
+    "message": "Domain Name Match Only"
+  },
+  "whitelistLabel": {
+    "message": "Whitelist URL："
+  },
+  "whitelistExplanation": {
+    "message": "URLs in the whitelist will be ignored for detection. The following format is supported："
+  },
+  "whitelistTip2": {
+    "message": "• Wild-card: *.example.com"
   },
   "scanSettings": {
     "message": "Scan Settings"

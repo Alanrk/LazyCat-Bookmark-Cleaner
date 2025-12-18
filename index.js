@@ -35,8 +35,6 @@ function updateInvalidBookmarksCount() {
     }
 }
 
-
-
 // 添加失效类型筛选相关变量
 let currentFilter = 'all'; // 当前筛选类型
 const errorTypes = new Set(); // 存储所有出现的错误类型
@@ -56,17 +54,17 @@ function getLocalizedErrorMessage(error) {
             case '408': return getMessage('errorType_requestTimeout');
             case '418': return getMessage('errorType_teapot');           // 彩蛋状态码
             case '429': return getMessage('errorType_tooManyRequests');
-            
+
             // 5xx 服务器错误
             case '500': return getMessage('errorType_serverError');
             case '502': return getMessage('errorType_badGateway');
             case '503': return getMessage('errorType_serviceUnavailable');
             case '504': return getMessage('errorType_gatewayTimeout');
-            
+
             // 非标准状态码
             case '777': return getMessage('errorType_nonStandard777');
             case '468': return getMessage('errorType_nonStandard468');
-            
+
             default: return `HTTP Error: ${code}`; // 对于未定义的状态码返回原始错误
         }
     }
@@ -87,9 +85,6 @@ function getLocalizedErrorMessage(error) {
     return errorMap[error] || error;
 }
 
-
-
-
 // 添加更新全选按钮状态的函数
 function updateSelectAllButtonState() {
     const selectAllBtn = document.getElementById('select-all');
@@ -97,23 +92,23 @@ function updateSelectAllButtonState() {
     const visibleCheckboxes = Array.from(document.querySelectorAll('.result-item'))
         .filter(item => item.style.display !== 'none')
         .map(item => item.querySelector('.bookmark-checkbox'));
-    
+
     if (selectAllBtn && visibleCheckboxes.length > 0) {
         const isAllSelected = visibleCheckboxes.every(cb => cb.checked);
-        
+
         let span = selectAllBtn.querySelector('span[data-i18n]');
-        
+
         if (!span) {
             span = document.createElement('span');
             span.setAttribute('data-i18n', 'selectAll');
             selectAllBtn.textContent = '';
             selectAllBtn.appendChild(span);
         }
-        
+
         const messageKey = isAllSelected ? 'deselectAll' : 'selectAll';
         span.setAttribute('data-i18n', messageKey);
         span.textContent = chrome.i18n.getMessage(messageKey);
-        
+
         // 只有当有可见项目时才启用按钮
         selectAllBtn.disabled = visibleCheckboxes.length === 0;
     }
@@ -139,22 +134,22 @@ function initializeProgressRing() {
     const container = document.querySelector('.scan-container');
     const progressText = document.querySelector('.progress-text');
     const progressRing = document.querySelector('.progress-ring-circle');
-    
+
     const radius = 70;
     const circumference = 2 * Math.PI * radius;
-    
+
     // 设置初始状态
     if (progressRing) {
         progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
         progressRing.style.strokeDashoffset = circumference;
     }
-    
+
     // 重置文本
     if (progressText) {
         progressText.textContent = '0%';
         progressText.style.opacity = '1';
     }
-    
+
     if (container) {
         container.classList.remove('scanning');
         container.classList.remove('scan-complete');
@@ -174,17 +169,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 初始化设置
     await initSettings();
-    
+
     // 获取必要的 DOM 元素
     const scanButton = document.getElementById('scan-button');
     const invalidList = document.getElementById('invalidList');
-    
+
     // 确保必要的容器存在
     if (!invalidList) {
         console.error('Invalid list container not found');
         return;
     }
-    
+
     // 初始化DOM元素
     const loadingDiv = document.getElementById('loading');
     const resultsDiv = document.getElementById('results');
@@ -193,10 +188,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const invalidLinksEl = document.getElementById('invalid-links');
     const emptyFoldersEl = document.getElementById('empty-folders');
     const buttonText = scanButton.querySelector('.button-text');
-    
+
     // 设置初始文案
     buttonText.textContent = chrome.i18n.getMessage('scanBookmarks');
-    
+
     // 初始化显示
     scannedBookmarksEl.textContent = '0';
     totalBookmarksEl.textContent = '-';
@@ -207,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const tree = await chrome.bookmarks.getTree();
         totalBookmarks = await countCheckableBookmarks(tree[0]);
-        
+
         // 更新显示
         if (scannedBookmarksEl && totalBookmarksEl) {
             scannedBookmarksEl.textContent = '0';
@@ -229,88 +224,78 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 添加取消扫描的文本
     scanButton.setAttribute('data-scan-text', chrome.i18n.getMessage('scanning', 'Scanning...'));
     scanButton.setAttribute('data-cancel-text', chrome.i18n.getMessage('cancelScan', 'Cancel'));
-    
-    let scanCancelled = false;
-    
+
     scanButton.addEventListener('click', async () => {
         const container = document.querySelector('.scan-container');
         const settingsButton = document.getElementById('settings-button');
-        
+
         // 如果正在扫描，则取消扫描
         if (container.classList.contains('scanning')) {
+            scanCancelled = true;
             await cancelScan();
-            
+
             // 更新UI状态
             container.classList.remove('scanning');
             scanButton.classList.remove('cancel');
             buttonText.textContent = chrome.i18n.getMessage('scanBookmarks');
-            
+
             // 显示设置按钮
             if (settingsButton) {
                 settingsButton.style.display = '';
             }
-            
+
             // 重置所有状态和数据
             resetScanState();
             resetScanData();
             return;
         }
-        
-        // 开始新扫描时隐藏设置按钮
-        if (settingsButton) {
-            settingsButton.style.display = 'none';
-        }
-        
-        // 开始新扫描
-        // 重置所有数据（只在开始新扫描时调用一次）
-        resetScanData();
-        
+
         // 检查是否是首次扫描
         if (await isFirstScan()) {
             // 显示超时设置对话框
             showTimeoutDialog();
-            
+
             // 等待用户确认设置
             const confirmed = await new Promise(resolve => {
                 const dialog = document.getElementById('timeout-dialog');
                 const confirmBtn = document.getElementById('confirm-timeout');
                 const cancelBtn = document.getElementById('cancel-timeout');
-                
+
                 const handleConfirm = () => {
                     cleanup();
                     resolve(true);
                 };
-                
+
                 const handleCancel = () => {
                     cleanup();
                     resolve(false);
                 };
-                
+
                 const cleanup = () => {
                     confirmBtn.removeEventListener('click', handleConfirm);
                     cancelBtn.removeEventListener('click', handleCancel);
                 };
-                
+
                 confirmBtn.addEventListener('click', handleConfirm);
                 cancelBtn.addEventListener('click', handleCancel);
             });
-            
+
             // 如果用户取消了设置，则不开始扫描
             if (!confirmed) {
                 return;
             }
-            
+
             // 标记已经扫描过
             await markScanned();
         }
-        
+
         // 开始新扫描前重置所有数据
         resetScanData();
-        
+
         // 初始化计时器
         scanStartTime = Date.now();
         scanDurationInterval = setInterval(updateScanDuration, 1000);
-        
+
         // 开始扫描时更改按钮文案和样式
         buttonText.textContent = chrome.i18n.getMessage('cancelScan');
         scanButton.classList.add('cancel');
@@ -326,7 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             // 禁用删除和全选按钮
             disableBatchActions();
-            
+
             // 创建或清空无效列表容器
             let invalidList = document.getElementById('invalidList');
             if (!invalidList) {
@@ -337,22 +322,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 invalidList.innerHTML = '';
             }
-            
+
             // 隐藏批量操作按钮
             document.querySelector('.batch-actions').style.display = 'none';
-            
+
             // 获取书签树并开始扫描
             const tree = await chrome.bookmarks.getTree();
             const bookmarkCount = await countCheckableBookmarks(tree[0]);
             showMovingCat();
-            
+
             // 在扫描过程中定期检查是否取消
-            await scanBookmarks(tree[0], [], { 
-                count: 0, 
+            await scanBookmarks(tree[0], [], {
+                count: 0,
                 total: bookmarkCount,
-                shouldCancel: () => scanCancelled 
+                shouldCancel: () => scanCancelled
             });
-            
+
             // 扫描完成后的处理
             if (!scanCancelled) {  // 只在非取消状态下显示结果
                 if (invalidBookmarks.length > 0 || emptyFolders.length > 0) {
@@ -376,7 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>
                     `;
-                    
+
                     // 更新本地化文本
                     document.querySelectorAll('[data-i18n]').forEach(element => {
                         const message = element.getAttribute('data-i18n');
@@ -390,7 +375,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     createConfetti();
                 }
             }
-            
+
         } catch (error) {
             if (!scanCancelled) {  // 只在非取消状态下显示错误
                 const invalidList = document.getElementById('invalidList');
@@ -408,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             isScanning = false;
             scanButton.classList.remove('disabled');
             loadingDiv.style.display = 'none';
-            
+
             // 如果是被取消的，显示取消消息
             if (scanCancelled) {
                 const invalidList = document.getElementById('invalidList');
@@ -427,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 扫描完成或出错时恢复按钮文案和样式
             buttonText.textContent = chrome.i18n.getMessage('scanBookmarks');
             scanButton.classList.remove('cancel');
-            
+
             // 扫描结束时停止计时
             if (!scanCancelled) {
                 finishScan();
@@ -443,7 +428,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             invalidList = document.createElement('div');
             invalidList.id = 'invalidList';
             invalidList.className = 'results';
-            
+
             // 找到合适的父容器来添加
             const container = document.querySelector('.container');
             if (container) {
@@ -454,7 +439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 初始化设置
     await initSettings();
-    
+
     // 添加设置按钮点击事件（如果你有设置按钮的话）
     const settingsButton = document.getElementById('settings-button');
     if (settingsButton) {
@@ -465,7 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(getMessage('cannotChangeSettingsDuringScan'));
                 return;
             }
-            
+
             showTimeoutDialog();
         });
     }
@@ -491,11 +476,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function scanBookmarks(node, path = [], counter = { count: 0, total: 0, shouldCancel: () => false }) {
     try {
+        console.log(counter.shouldCancel())
         // 检查是否已取消
         if (counter.shouldCancel()) {
             throw new Error('Scan cancelled');
         }
-        
+
         if (node.children) {
             const currentPath = [...path, node.title || getMessage('untitledFolder')];
             let hasBookmarks = false;
@@ -525,7 +511,7 @@ async function scanBookmarks(node, path = [], counter = { count: 0, total: 0, sh
             // 检查收集到的书签
             if (bookmarksToCheck.length > 0) {
                 const { results } = await checkBookmarksInBatch(bookmarksToCheck, counter);
-                
+
                 if (results && Array.isArray(results)) {
                     results.forEach(({ bookmark, isValid, reason }) => {
                         if (!isValid) {
@@ -562,7 +548,7 @@ async function scanBookmarks(node, path = [], counter = { count: 0, total: 0, sh
 
             return hasBookmarks || hasBookmarksInSubfolders;
         }
-        
+
         return false;
     } catch (error) {
         if (error.message === 'Scan cancelled') {
@@ -577,17 +563,17 @@ async function scanBookmarks(node, path = [], counter = { count: 0, total: 0, sh
 async function checkBookmarksInBatch(bookmarks, counter, batchSize = CONFIG.batchSize) {
     const results = [];
     const retryBookmarks = new Map();
-    
+
     for (let i = 0; i < bookmarks.length; i += batchSize) {
         if (i > 0) {
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        
+
         // 检查是否取消
         if (counter.shouldCancel()) {
             throw new Error('Scan cancelled');
         }
-        
+
         const batch = bookmarks.slice(i, i + batchSize);
         const checks = batch.map(async bookmark => {
             try {
@@ -598,38 +584,38 @@ async function checkBookmarksInBatch(bookmarks, counter, batchSize = CONFIG.batc
 
                 // 移动计数器更新到这里
                 counter.count++;
-                
+
                 // 更新已扫描书签数显示
                 const scannedBookmarksEl = document.getElementById('scanned-bookmarks');
                 if (scannedBookmarksEl) {
                     scannedBookmarksEl.textContent = counter.count;
                 }
-                
+
                 // 更新进度
                 updateProgress(counter.count, counter.total);
-                
+
                 return { bookmark, ...result };
             } catch (error) {
                 // 即使出错也要计数
                 counter.count++;
                 updateProgress(counter.count, counter.total);
-                
-                return { 
-                    bookmark, 
-                    isValid: false, 
-                    reason: error.message || 'Check failed' 
+
+                return {
+                    bookmark,
+                    isValid: false,
+                    reason: error.message || 'Check failed'
                 };
             }
         });
-        
+
         const batchResults = await Promise.all(checks);
         results.push(...batchResults.filter(r => !r.pending));
     }
-    
+
     // 等待并处理重试结果
     if (retryBookmarks.size > 0) {
         await new Promise(resolve => setTimeout(resolve, 3000)); // 给重试充足时间
-        
+
         // 检查重试结果
         for (const [url, bookmark] of retryBookmarks.entries()) {
             if (!results.some(r => r.bookmark.url === url)) {
@@ -642,12 +628,12 @@ async function checkBookmarksInBatch(bookmarks, counter, batchSize = CONFIG.batc
             }
         }
     }
-    
+
     // 确保更新最终统计
     updateStats();
-    
-    return { 
-        results, 
+
+    return {
+        results,
         retryBookmarks,
         totalProcessed: counter.count,
         totalInvalid: results.filter(r => !r.isValid).length
@@ -667,20 +653,20 @@ function addInvalidBookmark(bookmark, reason) {
 
     const item = document.createElement('div');
     item.className = 'result-item';
-    
+
     // 创建复选框
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'bookmark-checkbox';
     checkbox.setAttribute('data-id', bookmark.id);
-    
+
     checkbox.addEventListener('change', (e) => {
         if (isScanning) {
             e.preventDefault();
             checkbox.checked = !checkbox.checked;
             return;
         }
-        
+
         if (e.target.checked) {
             selectedBookmarks.add(bookmark.id);
             item.classList.add('selected');
@@ -713,7 +699,7 @@ function addInvalidBookmark(bookmark, reason) {
     const reasonTag = document.createElement('div');
     reasonTag.className = 'bookmark-reason';
     reasonTag.textContent = getLocalizedErrorMessage(reason);
-    
+
     // 添加 title 属性作为 tooltip
     reasonTag.title = getErrorExplanation(reason);
 
@@ -723,9 +709,9 @@ function addInvalidBookmark(bookmark, reason) {
     item.appendChild(urlDiv);
     item.appendChild(path);
     item.appendChild(reasonTag);
-    
+
     invalidList.appendChild(item);
-    
+
     // 更新计数
     invalidBookmarks.push(bookmark);
     updateInvalidBookmarksCount();
@@ -736,35 +722,35 @@ function updateProgress(current, total) {
     const container = document.querySelector('.scan-container');
     const progressText = document.querySelector('.progress-text');
     const progressRing = document.querySelector('.progress-ring-circle');
-    
+
     // 确保 current 不超过 total
     current = Math.min(current, total);
-    
+
     // 计算精确的百分比
     const percentage = (current / total) * 100;
-    
+
     // 特殊处理完成状态
     const isComplete = current === total;
     // 如果未完成，显示向下取整的百分比，确保只有真正完成时才显示 100%
     const displayPercentage = isComplete ? 100 : Math.floor(percentage);
-    
+
     const radius = 70;
     const circumference = 2 * Math.PI * radius;
     // 使用精确的百分比来计算圆环偏移量，保持动画平滑
     const offset = circumference - (percentage / 100) * circumference;
-    
+
     requestAnimationFrame(() => {
         // 设置圆环属性
         progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
         progressRing.style.strokeDashoffset = offset;
-        
+
         // 更新文本显示
         progressText.style.opacity = '1';
         progressText.textContent = `${displayPercentage}%`;
-        
+
         // 添加扫描中的类
         container.classList.add('scanning');
-        
+
         // 只在真正完成时处理完成状态
         if (isComplete) {
             container.classList.add('scan-complete');
@@ -780,22 +766,22 @@ function updateProgress(current, total) {
 function animateNumber(element, start, end) {
     const duration = 500; // 动画持续时间（毫秒）
     const startTime = performance.now();
-    
+
     function updateNumber(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
+
         // 使用 easeOutQuad 缓动函数使动画更自然
         const easeProgress = 1 - (1 - progress) * (1 - progress);
         const current = Math.round(start + (end - start) * easeProgress);
-        
+
         element.textContent = current;
-        
+
         if (progress < 1) {
             requestAnimationFrame(updateNumber);
         }
     }
-    
+
     requestAnimationFrame(updateNumber);
 }
 
@@ -803,11 +789,11 @@ function updateStats() {
     const totalBookmarksEl = document.getElementById('total-bookmarks');
     const scannedBookmarksEl = document.getElementById('scanned-bookmarks');
     const emptyFoldersEl = document.getElementById('empty-folders');
-    
+
     // 只更新总数，让扫描计数由 scanBookmarks 处理
     if (totalBookmarksEl) totalBookmarksEl.textContent = totalBookmarks;
     if (emptyFoldersEl) emptyFoldersEl.textContent = emptyFolders.length;
-    
+
     // 用统一的更新函数
     updateInvalidBookmarksCount();
 }
@@ -819,19 +805,19 @@ function displayResults() {
         console.error('Invalid list container not found in displayResults');
         return;
     }
-    
+
     console.log('Display Results:', {
         invalidBookmarksLength: invalidBookmarks.length,
         emptyFoldersLength: emptyFolders.length
     });
-    
+
     // 清空现有列表
     invalidList.innerHTML = '';
-    
+
     // 如果没有无效书签和空文件夹，显示成功消息并触发撒花
     if (invalidBookmarks.length === 0 && emptyFolders.length === 0) {
         console.log('No invalid bookmarks or empty folders, showing success state');
-        
+
         invalidList.innerHTML = `
             <div class="success-state">
                 <div class="success-icon">
@@ -847,7 +833,7 @@ function displayResults() {
                 </div>
             </div>
         `;
-        
+
         // 更新本地化文本
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const message = element.getAttribute('data-i18n');
@@ -882,7 +868,7 @@ function displayResults() {
             addEmptyFolder(item.data);
         }
     });
-    
+
     // 添加这行：更新筛选标签
     createFilterTags();
 }
@@ -897,20 +883,20 @@ function addEmptyFolder(folder) {
 
     const item = document.createElement('div');
     item.className = 'result-item';
-    
+
     // 创建复选框
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'bookmark-checkbox';
     checkbox.setAttribute('data-id', folder.id);
-    
+
     checkbox.addEventListener('change', (e) => {
         if (isScanning) {
             e.preventDefault();
             checkbox.checked = !checkbox.checked;
             return;
         }
-        
+
         if (e.target.checked) {
             selectedBookmarks.add(folder.id);
             item.classList.add('selected');
@@ -948,7 +934,7 @@ function addEmptyFolder(folder) {
     item.appendChild(urlDiv);
     item.appendChild(path);
     item.appendChild(reasonTag);
-    
+
     invalidList.appendChild(item);
     updateSelectAllButtonState();
 }
@@ -967,7 +953,7 @@ function escapeHtml(unsafe) {
 // 计算需要检查的书签总数
 async function countCheckableBookmarks(node) {
     let count = 0;
-    
+
     if (node.children) {
         for (const child of node.children) {
             if (child.url) {
@@ -981,7 +967,7 @@ async function countCheckableBookmarks(node) {
             }
         }
     }
-    
+
     return count;
 }
 
@@ -995,7 +981,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 addInvalidBookmark(bookmark, message.result.reason);
             }
             retryBookmarks.delete(message.url);
-            
+
             // 更新进度显示
             updateProgress(counter.count, counter.total);
         }
@@ -1005,10 +991,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // 修改 initBatchActions 函数
 function initBatchActions() {
     console.log('Initializing batch actions...'); // 调试日志
-    
+
     const deleteSelectedBtn = document.getElementById('delete-selected');
     const selectAllBtn = document.getElementById('select-all');
-    
+
     if (!selectAllBtn || !deleteSelectedBtn) {
         console.error('Batch action buttons not found!');
         return;
@@ -1024,15 +1010,15 @@ function initBatchActions() {
     newSelectAllBtn.addEventListener('click', () => {
         console.log('Select all clicked'); // 调试日志
         if (isScanning) return;
-        
+
         // 获取当前可见的复选框
         const visibleItems = Array.from(document.querySelectorAll('.result-item'))
             .filter(item => item.style.display !== 'none');
         const visibleCheckboxes = visibleItems.map(item => item.querySelector('.bookmark-checkbox'));
-        
+
         // 检查是否所有可见项目都已选中
         const isAllSelected = visibleCheckboxes.every(cb => cb.checked);
-        
+
         // 切换选中状态
         visibleCheckboxes.forEach(checkbox => {
             checkbox.checked = !isAllSelected;
@@ -1045,7 +1031,7 @@ function initBatchActions() {
                 checkbox.closest('.result-item').classList.remove('selected');
             }
         });
-        
+
         updateDeleteButtonState();
         updateSelectAllButtonState();
     });
@@ -1066,9 +1052,9 @@ function initBatchActions() {
                     if (item) {
                         // 检查是否为空文件夹
                         const reasonElement = item.querySelector('.bookmark-reason');
-                        const isEmptyFolder = reasonElement && 
+                        const isEmptyFolder = reasonElement &&
                             reasonElement.textContent === chrome.i18n.getMessage('errorType_emptyFolder');
-                        
+
                         // 更新统计数据
                         if (isEmptyFolder) {
                             deletedFolders++;
@@ -1083,13 +1069,13 @@ function initBatchActions() {
                                 invalidBookmarks.splice(index, 1);
                             }
                         }
-                        
+
                         // 更新总书签数
                         totalBookmarks--;
-                        
+
                         // 更新界面显示
                         updateAllStats();
-                        
+
                         // 移除项目
                         item.remove();
                     }
@@ -1105,10 +1091,10 @@ function initBatchActions() {
                     message = chrome.i18n.getMessage('deleteSuccessFolders', [deletedFolders]);
                 }
                 showToast(message);
-                
+
                 // 清除选中状态
                 selectedBookmarks.clear();
-                
+
                 // 如果删除后没有更多项目，显示成功状态并触发撒花
                 const remainingItems = document.querySelectorAll('.result-item');
                 if (remainingItems.length === 0) {
@@ -1128,7 +1114,7 @@ function initBatchActions() {
                             </div>
                         </div>
                     `;
-                    
+
                     // 更新本地化文本
                     document.querySelectorAll('[data-i18n]').forEach(element => {
                         const message = element.getAttribute('data-i18n');
@@ -1150,7 +1136,7 @@ function initBatchActions() {
                 if (remainingItems.length === 0 && batchActions) {
                     batchActions.style.display = 'none';
                 }
-                
+
             } catch (error) {
                 console.error('Error deleting bookmarks:', error);
                 showToast(chrome.i18n.getMessage('errorDeleting'));
@@ -1165,20 +1151,20 @@ function initBatchActions() {
 function createInvalidItem(bookmark, reason) {
     const item = document.createElement('div');
     item.className = 'result-item';
-    
+
     // 添加复选框
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'bookmark-checkbox';
     checkbox.setAttribute('data-id', bookmark.id);
-    
+
     checkbox.addEventListener('change', (e) => {
         if (isScanning) {
             e.preventDefault();
             checkbox.checked = !checkbox.checked;
             return;
         }
-        
+
         if (e.target.checked) {
             selectedBookmarks.add(bookmark.id);
             item.classList.add('selected');
@@ -1188,7 +1174,7 @@ function createInvalidItem(bookmark, reason) {
         }
         updateDeleteButtonState();
     });
-    
+
     // 创建书签标题
     const title = document.createElement('div');
     title.className = 'bookmark-title';
@@ -1212,7 +1198,7 @@ function createInvalidItem(bookmark, reason) {
     const reasonTag = document.createElement('div');
     reasonTag.className = 'bookmark-reason';
     reasonTag.textContent = reason;
-    
+
     // 添加 title 属性作为 tooltip
     reasonTag.title = getErrorExplanation(reason);
 
@@ -1222,7 +1208,7 @@ function createInvalidItem(bookmark, reason) {
     item.appendChild(urlDiv);
     item.appendChild(path);
     item.appendChild(reasonTag);
-    
+
     return item;
 }
 
@@ -1245,7 +1231,7 @@ function onScanComplete() {
 // 更新书签计数显示
 function updateBookmarkCountDisplay() {
     const totalBookmarksEl = document.getElementById('total-bookmarks');
-    
+
     // 只更新总数
     if (totalBookmarksEl) {
         totalBookmarksEl.textContent = totalBookmarks;
@@ -1256,13 +1242,13 @@ function updateBookmarkCountDisplay() {
 function updateAllStats() {
     // 更新书签总数和已扫描数
     updateBookmarkCountDisplay();
-    
+
     // 更新无效链接数
     const invalidLinksEl = document.getElementById('invalid-links');
     if (invalidLinksEl) {
         invalidLinksEl.textContent = invalidBookmarks.length;
     }
-    
+
     // 更新空文件夹数
     const emptyFoldersEl = document.getElementById('empty-folders');
     if (emptyFoldersEl) {
@@ -1289,7 +1275,7 @@ function disableBatchActions() {
     const selectAllBtn = document.getElementById('select-all');
     const deleteSelectedBtn = document.getElementById('delete-selected');
     const batchActions = document.querySelector('.batch-actions');
-    
+
     if (selectAllBtn) selectAllBtn.disabled = true;
     if (deleteSelectedBtn) deleteSelectedBtn.disabled = true;
     if (batchActions) batchActions.style.opacity = '1';
@@ -1300,7 +1286,7 @@ function enableBatchActions() {
     const selectAllBtn = document.getElementById('select-all');
     const deleteSelectedBtn = document.getElementById('delete-selected');
     const batchActions = document.querySelector('.batch-actions');
-    
+
     if (selectAllBtn) selectAllBtn.disabled = false;
     if (deleteSelectedBtn) {
         // 只有当有选中项时才启用删除按钮
@@ -1319,17 +1305,17 @@ function createFilterTags() {
 
     const filterContainer = document.createElement('div');
     filterContainer.className = 'filter-tags';
-    
+
     // 添加"全部"标签
     const allTag = createFilterTag('all', getMessage('errorType_all'));
     filterContainer.appendChild(allTag);
-    
+
     // 添加"空文件夹"标签
     if (emptyFolders.length > 0) {
         const emptyFolderTag = createFilterTag('empty-folder', getMessage('errorType_emptyFolder'));
         filterContainer.appendChild(emptyFolderTag);
     }
-    
+
     // 收集所有错误类型
     const reasons = new Set();
     document.querySelectorAll('.bookmark-reason').forEach(el => {
@@ -1338,13 +1324,13 @@ function createFilterTags() {
             reasons.add(errorText);
         }
     });
-    
+
     // 为每个错误类型创建标签
     reasons.forEach(reason => {
         const tag = createFilterTag(reason, reason);
         filterContainer.appendChild(tag);
     });
-    
+
     // 插入到批量操作按钮下方
     const batchActions = document.querySelector('.batch-actions');
     if (batchActions && batchActions.parentNode) {
@@ -1396,15 +1382,15 @@ function createFilterTag(type, text) {
     if (type === currentFilter) {
         tag.classList.add('active');
     }
-    
+
     tag.textContent = text;
-    
+
     // 添加提示文本
     const tooltip = getErrorExplanation(text);
     if (tooltip && tooltip !== text) {
         tag.setAttribute('data-tooltip', tooltip);
     }
-    
+
     tag.addEventListener('click', () => {
         currentFilter = type;
         document.querySelectorAll('.filter-tag').forEach(t => {
@@ -1413,7 +1399,7 @@ function createFilterTag(type, text) {
         tag.classList.add('active');
         applyFilter();
     });
-    
+
     return tag;
 }
 
@@ -1457,10 +1443,10 @@ function getErrorExplanation(errorType) {
 function resetScanState() {
     // 重置扫描标志
     isScanning = false;
-    
+
     // 重置进度环
     initializeProgressRing();
-    
+
     // 重置按钮文案和样式
     const scanButton = document.getElementById('scan-button');
     const buttonText = scanButton.querySelector('.button-text');
@@ -1470,26 +1456,26 @@ function resetScanState() {
     if (scanButton) {
         scanButton.classList.remove('cancel');
     }
-    
+
     // 重置进度文本
     const progressText = document.querySelector('.progress-text');
     if (progressText) {
         progressText.textContent = '0%';
     }
-    
+
     // 重置加载状态
     const loadingDiv = document.getElementById('loading');
     if (loadingDiv) {
         loadingDiv.style.display = 'none';
     }
-    
+
     // 重置扫描容器类
     const container = document.querySelector('.scan-container');
     if (container) {
         container.classList.remove('scanning');
         container.classList.remove('scan-complete');
     }
-    
+
     // 显示设置按钮
     const settingsButton = document.getElementById('settings-button');
     if (settingsButton) {
@@ -1505,43 +1491,43 @@ function resetScanData() {
     invalidBookmarksCount = 0;
     selectedBookmarks.clear();
     scanCancelled = false;
-    
+
     // 重置显示的数值，但保留总书签数
     const scannedBookmarksEl = document.getElementById('scanned-bookmarks');
     const invalidLinksEl = document.getElementById('invalid-links');
     const emptyFoldersEl = document.getElementById('empty-folders');
-    
+
     if (scannedBookmarksEl) scannedBookmarksEl.textContent = '0';
     if (invalidLinksEl) invalidLinksEl.textContent = '0';
     if (emptyFoldersEl) emptyFoldersEl.textContent = '0';
-    
+
     // 清空结果列表
     const invalidList = document.getElementById('invalidList');
     if (invalidList) {
         invalidList.innerHTML = '';
     }
-    
+
     // 隐藏批量操作按钮
     const batchActions = document.querySelector('.batch-actions');
     if (batchActions) {
         batchActions.style.display = 'none';
     }
-    
+
     // 移除筛选标签
     const filterTags = document.querySelector('.filter-tags');
     if (filterTags) {
         filterTags.innerHTML = '';
     }
-    
+
 }
 
 // 更新扫描持续时间
 function updateScanDuration() {
     if (!scanStartTime) return;
-    
+
     const duration = Math.floor((Date.now() - scanStartTime) / 1000);
     const durationEl = document.getElementById('scan-duration');
-    
+
     if (durationEl) {
         // 格式化时间
         let formatted;
@@ -1560,7 +1546,7 @@ function updateScanDuration() {
             const seconds = duration % 60;
             formatted = `${hours}h ${minutes}m ${seconds}`;
         }
-        
+
         durationEl.textContent = formatted;
     }
 }
@@ -1575,26 +1561,25 @@ function finishScan() {
 // 在取消扫描时重置计时器
 async function cancelScan() {
     scanCancelled = true;
-    
     // 取消所有正在进行的请求
     await chrome.runtime.sendMessage({ type: 'cancelScan' });
-    
+
     // 如果存在当前扫描控制器，则中止它
     if (currentScanController) {
         currentScanController.abort();
         currentScanController = null;
     }
-    
+
     // 清理计时器
     clearInterval(scanDurationInterval);
     scanStartTime = 0;
-    
+
     // 隐藏动画
     hideMovingCat();
-    
+
     // 重置进度
     initializeProgressRing();
-    
+
     // 显示设置按钮
     const settingsButton = document.getElementById('settings-button');
     if (settingsButton) {
@@ -1610,13 +1595,13 @@ function createMovingCat() {
     // 创建猫咪容器
     const catContainer = document.createElement('div');
     catContainer.className = 'moving-cat-container';
-    
+
     // 创建猫咪元素
     const cat = document.createElement('img');
     cat.src = 'images/logo.jpg';  // 使用你的猫咪logo
     cat.className = 'moving-cat';
     cat.alt = '懒猫书签清理';
-    
+
     catContainer.appendChild(cat);
     statsWrapper.after(catContainer); // 将猫咪放在stats-wrapper后面
     initCatInteraction();

@@ -1,4 +1,4 @@
-import { getCurrentTimeout } from './settings.js';
+import { getCurrentTimeout, URL_MATCH_MODE,extractDomain,isUrlWhitelisted } from './settings.js';
 
 // 添加调试开关
 const DEBUG = {
@@ -32,7 +32,7 @@ function debugTable(...args) {
 
 // 添加获取本地化消息的辅助函数
 function getMessage(messageName, substitutions = null) {
-    return chrome.i18n.getMessage(messageName, substitutions);
+  return chrome.i18n.getMessage(messageName, substitutions);
 }
 
 // 配置常量
@@ -69,64 +69,77 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     activeRequests.clear();
     return;
   }
-  
+
   if (request.type === 'checkUrl') {
-    const controller = new AbortController();
-    activeRequests.add(controller);
-    
-    checkUrl(request.url, controller.signal)
-      .then(result => {
-        activeRequests.delete(controller);
-        sendResponse(result);
-      })
-      .catch(error => {
-        activeRequests.delete(controller);
-        sendResponse({ 
-          isValid: false, 
-          reason: error.message 
+    chrome.storage.local.get(['urlMatchMode']).then(result => {
+      const urlMatchMode = result.urlMatchMode || URL_MATCH_MODE.FULL;
+      const controller = new AbortController();
+      activeRequests.add(controller);
+
+      checkUrl(request.url, controller.signal, urlMatchMode)
+        .then(result => {
+          activeRequests.delete(controller);
+          sendResponse(result);
+        })
+        .catch(error => {
+          activeRequests.delete(controller);
+          sendResponse({
+            isValid: false,
+            reason: error.message
+          });
         });
-      });
+    });
     return true;
   }
 });
 
-async function checkUrl(url, signal) {
-    try {
-        // 添加信号到请求中
-        const controller = new AbortController();
-        const localSignal = controller.signal;
-        
-        // 如果外部信号被中止，也中止本地控制器
-        signal.addEventListener('abort', () => {
-            controller.abort();
-        });
-        
-        activeRequests.add(controller);
-        
-        const result = await checkUrlOnce(url, localSignal);
-        
-        activeRequests.delete(controller);
-        return result;
-    } catch (error) {
-        if (error.name === 'AbortError') {
-            throw new Error('Request cancelled');
-        }
-        throw error;
+async function checkUrl(url, signal, matchMode = URL_MATCH_MODE.FULL) {
+  // 如果是域名匹配模式，提取当前URL的域名
+  let Url = matchMode === URL_MATCH_MODE.DOMAIN ? extractDomain(url) : url;
+  try {
+    // 添加信号到请求中
+    const controller = new AbortController();
+    const localSignal = controller.signal;
+
+    // 如果外部信号被中止，也中止本地控制器
+    signal.addEventListener('abort', () => {
+      controller.abort();
+    });
+
+    activeRequests.add(controller);
+
+    const result = await checkUrlOnce(Url, localSignal, matchMode);
+
+    activeRequests.delete(controller);
+    return result;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request cancelled');
     }
+    throw error;
+  }
 }
 
-async function checkUrlOnce(url) {
+async function checkUrlOnce(url, signal, matchMode = URL_MATCH_MODE.FULL) {
   const startTime = Date.now();
   try {
+    // 检查是否在白名单中
+    if (await isUrlWhitelisted(url)) {
+      return {
+        isValid: true,
+        reason: '白名单URL'
+      };
+    }
+
     // 获取用户设置的超时时间
     const timeout = await getCurrentTimeout();
-    
+
     debugGroup(`🔍 Checking URL: ${url}`);
     debugLog(`⏱️ Start Time: ${new Date(startTime).toLocaleTimeString()}`);
     debugLog(`⏱️ Timeout: ${timeout}ms`);
-    
+
     const specialProtocols = [
-      'chrome:', 'chrome-extension:', 'edge:', 'about:', 
+      'chrome:', 'chrome-extension:', 'edge:', 'about:',
       'file:', 'data:', 'javascript:', 'brave:'
     ];
 
@@ -157,7 +170,7 @@ async function checkUrlOnce(url) {
       const logRequestResult = () => {
         requestLog.endTime = Date.now();
         requestLog.duration = requestLog.endTime - requestLog.startTime;
-        
+
         debugLog('📊 Request Summary:');
         debugTable({
           'Duration': `${requestLog.duration}ms`,
@@ -187,9 +200,9 @@ async function checkUrlOnce(url) {
           timestamp: Date.now(),
           timeTaken: Date.now() - startTime
         });
-        
+
         debugLog(`❌ Error detected: ${details.error}`);
-        
+
         const connectionErrors = [
           'net::ERR_SOCKET_NOT_CONNECTED',
           'net::ERR_CONNECTION_CLOSED',
@@ -216,7 +229,7 @@ async function checkUrlOnce(url) {
           const alternateUrl = new URL(url);
           alternateUrl.protocol = urlObj.protocol === 'https:' ? 'http:' : 'https:';
           debugLog(`💡 Suggestion: Try ${alternateUrl.protocol} protocol`);
-          
+
           resolveResult({
             isValid: true,
             reason: `Connection failed, might be temporary or try ${alternateUrl.protocol.slice(0, -1)}`,
@@ -224,13 +237,13 @@ async function checkUrlOnce(url) {
           });
         }
         else if (accessErrors.includes(details.error)) {
-          resolveResult({ 
+          resolveResult({
             isValid: true,
             reason: 'Site blocks automated access but might be accessible in browser'
           });
         }
         else if (certErrors.includes(details.error)) {
-          resolveResult({ 
+          resolveResult({
             isValid: true,
             reason: 'Site has certificate issues but might be accessible'
           });
@@ -261,22 +274,22 @@ async function checkUrlOnce(url) {
         hasResponse = true;
         requestLog.statusCode = details.statusCode;
         debugLog(`✅ Response received: Status ${details.statusCode}`);
-        
+
         // 使用 handleStatusCode 的结果
         const result = handleStatusCode(details.statusCode, finalUrl || url);
         if (result) {
-            if (finalUrl && finalUrl !== url) {
-                result.redirectUrl = finalUrl;
-                result.reason = result.reason || `Redirected to ${finalUrl}`;
-            }
-            resolveResult(result);
-            return;
+          if (finalUrl && finalUrl !== url) {
+            result.redirectUrl = finalUrl;
+            result.reason = result.reason || `Redirected to ${finalUrl}`;
+          }
+          resolveResult(result);
+          return;
         }
 
         // 如果 handleStatusCode 没有返回结果，使用默认处理
         resolveResult({
-            isValid: false,
-            reason: `HTTP Error: ${details.statusCode}`
+          isValid: false,
+          reason: `HTTP Error: ${details.statusCode}`
         });
       };
 
@@ -285,11 +298,11 @@ async function checkUrlOnce(url) {
           isResolved = true;
           clearTimeout(timeout);
           removeListeners();
-          
+
           logRequestResult();
           debugGroupEnd();
           debugLog(`🏁 Final result:`, result);
-          
+
           resolve(result);
         }
       };
@@ -337,7 +350,7 @@ async function checkUrlOnce(url) {
           debugGroup('⚠️ Timeout Detection:');
           debugLog(`Time elapsed: ${timeElapsed}ms`);
           debugLog(`Has any response: ${hasResponse}`);
-          
+
           if (!hasResponse) {
             debugLog('❌ Request timed out with no response');
             controller.abort();
@@ -404,7 +417,7 @@ async function checkUrlOnce(url) {
           message: error.message,
           type: error.type
         });
-        
+
         // 对于 CORS 和一些常见的访问限制，认为网站是有效的
         if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
           resolveResult({
@@ -427,80 +440,80 @@ async function checkUrlOnce(url) {
 }
 
 function getStatusCodeReason(code) {
-    const reasons = {
-        401: 'Requires authentication',
-        403: 'Access restricted',
-        429: 'Too many requests'
-    };
-    return reasons[code] || `Status code: ${code}`;
+  const reasons = {
+    401: 'Requires authentication',
+    403: 'Access restricted',
+    429: 'Too many requests'
+  };
+  return reasons[code] || `Status code: ${code}`;
 }
 
 function handleStatusCode(statusCode, url) {
-    // 2xx 和 3xx 都认为是有效的
-    if (statusCode >= 200 && statusCode < 400) {
-        return { isValid: true };
-    }
-    
-    // 4xx 中的一些状态码表示资源存在但访问受限
-    if ([401, 403, 429, 405, 406, 407, 408].includes(statusCode)) {
-        return { 
-            isValid: true,
-            reason: getStatusCodeReason(statusCode)
+  // 2xx 和 3xx 都认为是有效的
+  if (statusCode >= 200 && statusCode < 400) {
+    return { isValid: true };
+  }
+
+  // 4xx 中的一些状态码表示资源存在但访问受限
+  if ([401, 403, 429, 405, 406, 407, 408].includes(statusCode)) {
+    return {
+      isValid: true,
+      reason: getStatusCodeReason(statusCode)
+    };
+  }
+
+  // 区分不同类型的 5xx 错误
+  if (statusCode >= 500) {
+    switch (statusCode) {
+      case 503: // Service Unavailable
+      case 504: // Gateway Timeout
+        return {
+          isValid: true,
+          reason: ('errorType_temporaryError', 'Service temporarily unavailable')
+        };
+
+      case 501: // Not Implemented
+        return {
+          isValid: false,
+          reason: getMessage('errorType_notImplemented', 'Service not implemented')
+        };
+
+      case 502: // Bad Gateway
+        return {
+          isValid: true,
+          reason: getMessage('errorType_badGateway', 'Bad Gateway')
+        };
+
+      default: // 500 和其他 5xx
+        return {
+          isValid: false,
+          reason: getMessage('errorType_serverError', 'Server Error')
         };
     }
-    
-    // 区分不同类型的 5xx 错误
-    if (statusCode >= 500) {
-        switch (statusCode) {
-            case 503: // Service Unavailable
-            case 504: // Gateway Timeout
-                return {
-                    isValid: true,
-                    reason: ('errorType_temporaryError', 'Service temporarily unavailable')
-                };
-                
-            case 501: // Not Implemented
-                return {
-                    isValid: false,
-                    reason: getMessage('errorType_notImplemented', 'Service not implemented')
-                };
-                
-            case 502: // Bad Gateway
-                return {
-                    isValid: true,
-                    reason: getMessage('errorType_badGateway', 'Bad Gateway')
-                };
-                
-            default: // 500 和其他 5xx
-                return {
-                    isValid: false,
-                    reason: getMessage('errorType_serverError', 'Server Error')
-                };
-        }
-    }
+  }
 
-    return null;
+  return null;
 }
 
 // 清理 URL 的辅助函数
 function cleanupUrl(url) {
   try {
     const urlObj = new URL(url);
-    
+
     // 1. 移除末尾的 # 或 /#
     if (urlObj.hash === '#' || urlObj.hash === '') {
       url = url.replace(/#$/, '');
       url = url.replace(/\/#$/, '/');
     }
-    
+
     // 2. 处理重复的斜杠
     url = url.replace(/([^:]\/)\/+/g, '$1');
-    
+
     // 3. 确保 http/https URL 末尾有斜杠
     if (!url.endsWith('/') && !urlObj.pathname.includes('.') && !urlObj.hash && !urlObj.search) {
       url += '/';
     }
-    
+
     return url;
   } catch (e) {
     return url;
@@ -511,23 +524,23 @@ function cleanupUrl(url) {
 function isSPAUrl(url) {
   try {
     const urlObj = new URL(url);
-    
+
     // 1. 检查是否为常见的 SPA 路由模式
     const spaPatterns = [
       /\/#\//, // Vue/React 常见路由格式
       /\/[#!]$/, // Angular 和其他框架常见格式
       /\/[#!]\//, // 带路径的 hash 路由
     ];
-    
+
     if (spaPatterns.some(pattern => pattern.test(url))) {
       return true;
     }
-    
+
     // 2. 检查是否为纯 hash 路由
     if (urlObj.hash && urlObj.hash !== '#') {
       return true;
     }
-    
+
     return false;
   } catch (e) {
     return false;
