@@ -55,7 +55,7 @@ Start organizing now and give your bookmarks a fresh new look! ✨
 
 **WeChat Group**
 
-<img src="https://raw.githubusercontent.com/Alanrk/blogimg/main/IMG_4528.JPG" width="300px" />
+<img src="https://raw.githubusercontent.com/Alanrk/blogimg/main/产品反馈群.png" width="300px" />
 
 
 **Donation Code**
