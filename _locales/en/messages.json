@@ -720,7 +720,195 @@
   "noDuplicatesDesc": {
     "message": "No duplicate bookmarks found, keep it up!"
   },
-  "nextScanTip": {
-    "message": "Recommended to check every 1-2 months"
+  "organizeTab": {
+    "message": "AI Organize"
+  },
+  "startClassify": {
+    "message": "Start Classification"
+  },
+  "cancelClassify": {
+    "message": "Cancel"
+  },
+  "classifiedLabel": {
+    "message": "Classified"
+  },
+  "uncategorizedLabel": {
+    "message": "Uncategorized"
+  },
+  "categoriesFound": {
+    "message": "Categories Found"
+  },
+  "llmSettings": {
+    "message": "AI Settings"
+  },
+  "llmSettingsTitle": {
+    "message": "AI Classification Settings"
+  },
+  "apiBaseUrlLabel": {
+    "message": "API Base URL:"
+  },
+  "apiModelLabel": {
+    "message": "Model:"
+  },
+  "apiKeyLabel": {
+    "message": "API Key:"
+  },
+  "testConnection": {
+    "message": "Test Connection"
+  },
+  "testSuccess": {
+    "message": "Connection successful! Model: $MODEL$",
+    "placeholders": {
+      "model": {
+        "content": "$1"
+      }
+    }
+  },
+  "testFailure": {
+    "message": "Connection failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "folderTargetLabel": {
+    "message": "Create folders under:"
+  },
+  "targetOtherBookmarks": {
+    "message": "Other Bookmarks"
+  },
+  "targetBookmarksBar": {
+    "message": "Bookmarks Bar"
+  },
+  "settingsSaved": {
+    "message": "Settings saved"
+  },
+  "noApiConfig": {
+    "message": "Please configure AI API settings first"
+  },
+  "errNoApiKey": {
+    "message": "Please enter an API Key"
+  },
+  "errUnknownClassify": {
+    "message": "Classification error: $1"
+  },
+  "noBookmarksToClassify": {
+    "message": "No bookmarks to classify"
+  },
+  "classifyCancelled": {
+    "message": "Classification cancelled"
+  },
+  "classificationResults": {
+    "message": "Classification Results"
+  },
+  "totalCategories": {
+    "message": "Categories"
+  },
+  "classifiedCount": {
+    "message": "Classified"
+  },
+  "uncategorizedCount": {
+    "message": "Uncategorized"
+  },
+  "uncategorizedSection": {
+    "message": "Uncategorized Bookmarks"
+  },
+  "rename": {
+    "message": "Rename"
+  },
+  "showMore": {
+    "message": "+$COUNT$ more",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "showLess": {
+    "message": "Show less"
+  },
+  "noCategoriesFound": {
+    "message": "No categories found"
+  },
+  "backToClassify": {
+    "message": "Back"
+  },
+  "applyOrganization": {
+    "message": "Apply Organization"
+  },
+  "applyingOrganization": {
+    "message": "Applying..."
+  },
+  "confirmApply": {
+    "message": "Will create $COUNT$ category folders and move $BOOKMARKS$ bookmarks. Continue?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "bookmarks": {
+        "content": "$2"
+      }
+    }
+  },
+  "organizeSuccessTitle": {
+    "message": "Organization Complete!"
+  },
+  "organizeSuccessTip": {
+    "message": "You can undo this operation within 30 minutes"
+  },
+  "applySuccess": {
+    "message": "Successfully organized $MOVED$ bookmarks into $CATS$ categories!",
+    "placeholders": {
+      "moved": {
+        "content": "$1"
+      },
+      "cats": {
+        "content": "$2"
+      }
+    }
+  },
+  "organizeAgain": {
+    "message": "Organize Again"
+  },
+  "undo": {
+    "message": "Undo"
+  },
+  "undoAvailable": {
+    "message": "Organization applied."
+  },
+  "undoAvailableWithTime": {
+    "message": "Organization applied. Undo available for $MIN$ min ($BOOKMARKS$ bookmarks, $FOLDERS$ folders)",
+    "placeholders": {
+      "min": {
+        "content": "$1"
+      },
+      "bookmarks": {
+        "content": "$2"
+      },
+      "folders": {
+        "content": "$3"
+      }
+    }
+  },
+  "undoConfirm": {
+    "message": "Are you sure you want to undo the last organization? All bookmarks will be restored."
+  },
+  "undoSuccess": {
+    "message": "Successfully restored $COUNT$ bookmarks",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "errApplyOrganization": {
+    "message": "Failed to apply organization: $1"
+  },
+  "errUndo": {
+    "message": "Failed to undo: $1"
+  },
+  "cannotChangeSettingsDuringClassify": {
+    "message": "Cannot change settings during classification"
   }
 }

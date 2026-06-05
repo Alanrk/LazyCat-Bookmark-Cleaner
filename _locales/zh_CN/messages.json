@@ -685,6 +685,197 @@
   },
   "noDuplicatesDesc": {
     "message": "暂时没有发现重复的书签，继续保持哦"
+  },
+  "organizeTab": {
+    "message": "AI 智能分类"
+  },
+  "startClassify": {
+    "message": "开始智能分类"
+  },
+  "cancelClassify": {
+    "message": "取消分类"
+  },
+  "classifiedLabel": {
+    "message": "已分类"
+  },
+  "uncategorizedLabel": {
+    "message": "未分类"
+  },
+  "categoriesFound": {
+    "message": "发现类别"
+  },
+  "llmSettings": {
+    "message": "AI 设置"
+  },
+  "llmSettingsTitle": {
+    "message": "AI 分类设置"
+  },
+  "apiBaseUrlLabel": {
+    "message": "API 基础 URL:"
+  },
+  "apiModelLabel": {
+    "message": "模型名称:"
+  },
+  "apiKeyLabel": {
+    "message": "API Key:"
+  },
+  "testConnection": {
+    "message": "测试连接"
+  },
+  "testSuccess": {
+    "message": "连接成功！模型: $MODEL$",
+    "placeholders": {
+      "model": {
+        "content": "$1"
+      }
+    }
+  },
+  "testFailure": {
+    "message": "连接失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "folderTargetLabel": {
+    "message": "创建分类文件夹位置:"
+  },
+  "targetOtherBookmarks": {
+    "message": "其他书签"
+  },
+  "targetBookmarksBar": {
+    "message": "书签栏"
+  },
+  "settingsSaved": {
+    "message": "设置已保存"
+  },
+  "noApiConfig": {
+    "message": "请先配置 AI API 设置"
+  },
+  "errNoApiKey": {
+    "message": "请输入 API Key"
+  },
+  "errUnknownClassify": {
+    "message": "分类出错: $1"
+  },
+  "noBookmarksToClassify": {
+    "message": "没有可分类的书签"
+  },
+  "classifyCancelled": {
+    "message": "分类已取消"
+  },
+  "classificationResults": {
+    "message": "分类结果预览"
+  },
+  "totalCategories": {
+    "message": "类别数"
+  },
+  "classifiedCount": {
+    "message": "已分类书签"
+  },
+  "uncategorizedCount": {
+    "message": "未分类书签"
+  },
+  "uncategorizedSection": {
+    "message": "未分类的书签"
+  },
+  "rename": {
+    "message": "重命名"
+  },
+  "showMore": {
+    "message": "+$COUNT$ 更多",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "showLess": {
+    "message": "收起"
+  },
+  "noCategoriesFound": {
+    "message": "未发现任何分类"
+  },
+  "backToClassify": {
+    "message": "返回"
+  },
+  "applyOrganization": {
+    "message": "应用分类整理"
+  },
+  "applyingOrganization": {
+    "message": "正在应用..."
+  },
+  "confirmApply": {
+    "message": "将创建 $COUNT$ 个类别文件夹并移动 $BOOKMARKS$ 个书签，是否继续？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "bookmarks": {
+        "content": "$2"
+      }
+    }
+  },
+  "organizeSuccessTitle": {
+    "message": "分类整理完成！"
+  },
+  "organizeSuccessTip": {
+    "message": "你可以在 30 分钟内撤销此操作"
+  },
+  "applySuccess": {
+    "message": "成功将 $MOVED$ 个书签整理到 $CATS$ 个类别中！",
+    "placeholders": {
+      "moved": {
+        "content": "$1"
+      },
+      "cats": {
+        "content": "$2"
+      }
+    }
+  },
+  "organizeAgain": {
+    "message": "再次整理"
+  },
+  "undo": {
+    "message": "撤销"
+  },
+  "undoAvailable": {
+    "message": "分类已应用。"
+  },
+  "undoAvailableWithTime": {
+    "message": "分类已应用。可在 $MIN$ 分钟内撤销（$BOOKMARKS$ 个书签，$FOLDERS$ 个文件夹）",
+    "placeholders": {
+      "min": {
+        "content": "$1"
+      },
+      "bookmarks": {
+        "content": "$2"
+      },
+      "folders": {
+        "content": "$3"
+      }
+    }
+  },
+  "undoConfirm": {
+    "message": "确定要撤销上次的分类整理吗？所有书签将恢复到原始位置。"
+  },
+  "undoSuccess": {
+    "message": "已成功恢复 $COUNT$ 个书签",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "errApplyOrganization": {
+    "message": "应用分类失败: $1"
+  },
+  "errUndo": {
+    "message": "撤销失败: $1"
+  },
+  "cannotChangeSettingsDuringClassify": {
+    "message": "分类过程中无法修改设置"
   }
 }
 

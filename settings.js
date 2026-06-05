@@ -5,6 +5,13 @@ const TIMEOUT_CONFIG = {
     DEFAULT: 15  // 默认超时时间（秒）
 };
 
+// LLM API 配置默认值
+const LLM_API_CONFIG_DEFAULTS = {
+    apiBaseUrl: 'https://api.openai.com/v1',
+    model: 'gpt-4o-mini',
+    apiKey: ''
+};
+
 const URL_MATCH_MODE = {
     FULL: 'full',      // 完整URL匹配
     DOMAIN: 'domain'   // 仅域名匹配
@@ -221,10 +228,67 @@ async function isUrlWhitelisted(url) {
     }
 }
 
+// LLM API 配置管理
+async function loadLlmConfig() {
+    try {
+        const result = await chrome.storage.local.get(['llmApiConfig']);
+        return result.llmApiConfig || { ...LLM_API_CONFIG_DEFAULTS };
+    } catch (error) {
+        console.error('Error loading LLM config:', error);
+        return { ...LLM_API_CONFIG_DEFAULTS };
+    }
+}
+
+async function saveLlmConfig(config) {
+    try {
+        await chrome.storage.local.set({ llmApiConfig: config });
+        console.log('LLM config saved');
+    } catch (error) {
+        console.error('Error saving LLM config:', error);
+        throw error;
+    }
+}
+
+async function testLlmConnection(config) {
+    try {
+        const baseUrl = config.apiBaseUrl.replace(/\/+$/, '');
+        const response = await fetch(`${baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${config.apiKey}`
+            },
+            body: JSON.stringify({
+                model: config.model,
+                messages: [
+                    { role: 'user', content: 'Reply with just the word "ok".' }
+                ],
+                max_tokens: 10,
+                temperature: 0
+            })
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text().catch(() => '');
+            return { ok: false, error: `HTTP ${response.status}: ${errBody.slice(0, 200)}` };
+        }
+
+        const data = await response.json();
+        return {
+            ok: true,
+            model: config.model,
+            response: data.choices?.[0]?.message?.content?.trim()
+        };
+    } catch (err) {
+        return { ok: false, error: err.message };
+    }
+}
+
 // 导出需要的函数和常量
 export {
     TIMEOUT_CONFIG,
     URL_MATCH_MODE,
+    LLM_API_CONFIG_DEFAULTS,
     initSettings,
     showTimeoutDialog,
     getCurrentTimeout,
@@ -232,5 +296,8 @@ export {
     markScanned,
     saveSettings,
     isUrlWhitelisted,
-    extractDomain
+    extractDomain,
+    loadLlmConfig,
+    saveLlmConfig,
+    testLlmConnection
 };
