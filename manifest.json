@@ -1,49 +1,57 @@
 {
-  "manifest_version": 3,
-  "name": "__MSG_extName__",
-  "version": "1.46",
-  "description": "__MSG_extDescription__",
-  "default_locale": "zh_CN",
-  "permissions": [
-    "bookmarks",
-    "storage",
-    "favicon",
-    "webRequest"
-  ],
-  "host_permissions": [
-    "http://*/*",
-    "https://*/*"
-  ],
-  "action": {
-    "default_icon": {
-      "16": "images/icon16.png",
-      "48": "images/icon48.png",
-      "128": "images/icon128.png"
-    },
-    "default_title": "Bookmark Cleaner"
-  },
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  },
-  "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png",
-    "32": "images/icon32.png"
-  },
-  "web_accessible_resources": [{
-    "resources": [
-      "index.html", 
-      "profile.html",
-      "confetti.js",
-      "duplicates.js",
-      "bookmarkProfile.js",
-      "preview.js",
-      "settings.js",
-      "index.js",
-      "duplicates.html"
-    ],
-    "matches": ["<all_urls>"]
-  }]
+	"manifest_version": 3,
+	"name": "__MSG_extName__",
+	"version": "1.46",
+	"description": "__MSG_extDescription__",
+	"default_locale": "zh_CN",
+	"permissions": [
+		"bookmarks",
+		"storage",
+		"favicon",
+		"webRequest"
+	],
+	"host_permissions": [
+		"http://*/*",
+		"https://*/*"
+	],
+	"action": {
+		"default_icon": {
+			"16": "images/icon16.png",
+			"48": "images/icon48.png",
+			"128": "images/icon128.png"
+		},
+		"default_title": "Bookmark Cleaner"
+	},
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
+	"icons": {
+		"16": "images/icon16.png",
+		"48": "images/icon48.png",
+		"128": "images/icon128.png",
+		"32": "images/icon32.png"
+	},
+	"web_accessible_resources": [
+		{
+			"resources": [
+				"index.html",
+				"profile.html",
+				"organize.html",
+				"confetti.js",
+				"duplicates.js",
+				"bookmarkProfile.js",
+				"bookmarkOrganizer.js",
+				"llmClient.js",
+				"preview.js",
+				"settings.js",
+				"index.js",
+				"organize.js",
+				"duplicates.html"
+			],
+			"matches": [
+				"<all_urls>"
+			]
+		}
+	]
 }

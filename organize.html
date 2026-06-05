@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookmark Cleaner - AI Organize</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-header">
+        <nav class="nav-tabs">
+            <div class="brand">
+                <img src="images/logo.jpg" alt="Lazy Cat Bookmark Cleaner" class="brand-logo">
+                <span class="brand-name" data-i18n="brandName">懒猫书签清理</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-tab">
+                    <span class="tab-icon">🧹</span>
+                    <span data-i18n="invalidBookmarksTab">失效书签</span>
+                </a>
+                <a href="duplicates.html" class="nav-tab">
+                    <span class="tab-icon">🔄</span>
+                    <span data-i18n="duplicatesTab">重复书签</span>
+                </a>
+                <a href="profile.html" class="nav-tab">
+                    <span class="tab-icon">📊</span>
+                    <span data-i18n="profileTab">书签画像</span>
+                </a>
+                <a href="organize.html" class="nav-tab active">
+                    <span class="tab-icon">🤖</span>
+                    <span data-i18n="organizeTab">AI 智能分类</span>
+                </a>
+                <a href="https://www.ainewtab.app/" class="nav-tab" target="_blank">
+                    <span class="tab-icon">📑</span>
+                    <span data-i18n="newTab">书签新标签页</span>
+                </a>
+                <a href="https://cooing-loganberry-b74.notion.site/1ac1ee1c3b3a80668b33f4215eb2ae0f" class="nav-tab" target="_blank">
+                    <span class="tab-icon">👨‍💻</span>
+                    <span data-i18n="aboutAuthor">赞赏支持</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container">
+        <!-- ===== Phase 1: Setup & Classification ===== -->
+        <div id="classify-phase">
+            <div class="scan-stats-wrapper">
+                <div class="progress-ring-container">
+                    <svg class="progress-ring" width="160" height="160">
+                        <circle class="progress-ring-circle-bg" cx="80" cy="80" r="70"/>
+                        <circle class="progress-ring-circle" cx="80" cy="80" r="70"/>
+                    </svg>
+                    <div class="progress-content">
+                        <span class="progress-text">0%</span>
+                    </div>
+                </div>
+
+                <div class="right-content">
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <div class="stat-label" data-i18n="totalBookmarks">Total Bookmarks</div>
+                            <div class="stat-value" id="organize-total">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label" data-i18n="classifiedLabel">Classified</div>
+                            <div class="stat-value" id="organize-classified">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label" data-i18n="uncategorizedLabel">Uncategorized</div>
+                            <div class="stat-value" id="organize-uncategorized">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label" data-i18n="categoriesFound">Categories Found</div>
+                            <div class="stat-value" id="organize-categories">0</div>
+                        </div>
+                    </div>
+
+                    <div class="scan-container">
+                        <button id="classify-button" class="scan-button">
+                            <span class="button-text" data-i18n="startClassify">Start Classification</span>
+                        </button>
+                        <button id="llm-settings-button" class="settings-button">
+                            <span data-i18n="llmSettings">AI Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LLM Settings Dialog -->
+            <div id="llm-settings-dialog" class="dialog-overlay" style="display: none;">
+                <div class="dialog">
+                    <h3 data-i18n="llmSettingsTitle">AI Classification Settings</h3>
+
+                    <div class="setting-item">
+                        <label class="setting-label" for="api-base-url" data-i18n="apiBaseUrlLabel">API Base URL:</label>
+                        <input type="text" id="api-base-url" class="setting-input"
+                               placeholder="https://api.openai.com/v1">
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label" for="api-model" data-i18n="apiModelLabel">Model:</label>
+                        <input type="text" id="api-model" class="setting-input"
+                               placeholder="gpt-4o-mini">
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label" for="api-key" data-i18n="apiKeyLabel">API Key:</label>
+                        <input type="password" id="api-key" class="setting-input"
+                               placeholder="sk-...">
+                    </div>
+
+                    <div class="setting-item test-connection-row">
+                        <button id="test-connection-btn" class="button" data-i18n="testConnection">
+                            Test Connection
+                        </button>
+                        <span id="test-connection-result" style="display:none;"></span>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label" data-i18n="folderTargetLabel">Create folders under:</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="targetFolder" value="2" checked>
+                                <span data-i18n="targetOtherBookmarks">Other Bookmarks</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="targetFolder" value="1">
+                                <span data-i18n="targetBookmarksBar">Bookmarks Bar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="dialog-actions">
+                        <button id="cancel-llm-settings" class="secondary-button" data-i18n="cancel">Cancel</button>
+                        <button id="save-llm-settings" data-i18n="confirm">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Phase 2: Preview Results ===== -->
+        <div id="preview-phase" style="display: none;">
+            <div class="section-header">
+                <h2 data-i18n="classificationResults">Classification Results</h2>
+            </div>
+
+            <div class="organize-summary" id="organize-summary">
+                <div class="summary-card">
+                    <span class="summary-label" data-i18n="totalCategories">Categories</span>
+                    <span class="summary-value" id="preview-category-count">0</span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-label" data-i18n="classifiedCount">Classified</span>
+                    <span class="summary-value" id="preview-classified-count">0</span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-label" data-i18n="uncategorizedCount">Uncategorized</span>
+                    <span class="summary-value" id="preview-uncategorized-count">0</span>
+                </div>
+            </div>
+
+            <div id="category-list" class="category-list">
+                <!-- Category cards render here -->
+            </div>
+
+            <!-- Uncategorized section -->
+            <div id="uncategorized-section" class="category-section" style="display: none;">
+                <h3 data-i18n="uncategorizedSection">Uncategorized Bookmarks</h3>
+                <div id="uncategorized-list" class="category-bookmark-list"></div>
+            </div>
+
+            <div class="batch-actions" style="display: flex; margin-top: 24px;">
+                <button id="back-button" class="button secondary-button" data-i18n="backToClassify">Back</button>
+                <button id="apply-button" class="scan-button" data-i18n="applyOrganization">Apply Organization</button>
+            </div>
+        </div>
+
+        <!-- ===== Phase 3: Success ===== -->
+        <div id="success-phase" style="display: none;">
+            <div class="success-state">
+                <div class="success-icon">
+                    <img src="images/icon128.png" alt="Happy Cat" class="cat-icon">
+                    <div class="success-badge">✓</div>
+                </div>
+                <div class="success-message">
+                    <h3 data-i18n="organizeSuccessTitle">Organization Complete!</h3>
+                    <p id="success-message-text"></p>
+                </div>
+                <div class="success-tips">
+                    <p data-i18n="organizeSuccessTip">You can undo this operation within 30 minutes</p>
+                </div>
+                <button id="organize-again-button" class="scan-button" style="margin-top: 16px;" data-i18n="organizeAgain">Organize Again</button>
+            </div>
+        </div>
+
+        <!-- ===== Undo Banner ===== -->
+        <div id="undo-banner" class="undo-banner" style="display: none;">
+            <span id="undo-banner-text" data-i18n="undoAvailable">Organization applied.</span>
+            <button id="undo-button" class="undo-action-btn" data-i18n="undo">Undo</button>
+            <button id="dismiss-undo-button" class="undo-dismiss-btn">✕</button>
+        </div>
+    </div>
+
+    <div class="cat-tooltip" style="display: none;">
+        <span class="tooltip-text"></span>
+    </div>
+
+    <div class="confetti-container"></div>
+
+    <script type="module" src="settings.js"></script>
+    <script type="module" src="confetti.js"></script>
+    <script type="module" src="bookmarkOrganizer.js"></script>
+    <script type="module" src="organize.js"></script>
+</body>
+</html>

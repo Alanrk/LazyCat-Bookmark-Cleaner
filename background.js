@@ -1,4 +1,5 @@
-import { getCurrentTimeout, URL_MATCH_MODE,extractDomain,isUrlWhitelisted } from './settings.js';
+import { getCurrentTimeout, URL_MATCH_MODE, extractDomain, isUrlWhitelisted, loadLlmConfig } from './settings.js';
+import { callLlmApi } from './llmClient.js';
 
 // 添加调试开关
 const DEBUG = {
@@ -88,6 +89,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             reason: error.message
           });
         });
+    });
+    return true;
+  }
+
+  if (request.type === 'classifyBookmarks') {
+    handleClassifyBookmarks(request).then(sendResponse).catch(err => {
+      sendResponse({ error: err.message });
     });
     return true;
   }
@@ -545,6 +553,33 @@ function isSPAUrl(url) {
   } catch (e) {
     return false;
   }
+}
+
+// 处理书签分类请求
+async function handleClassifyBookmarks(request) {
+  const config = await loadLlmConfig();
+
+  if (!config.apiKey) {
+    throw new Error('No API key configured');
+  }
+
+  const locale = chrome.i18n.getUILanguage().startsWith('zh') ? 'zh' : 'en';
+
+  const result = await callLlmApi(
+    config,
+    request.bookmarks,
+    null, // 暂不支持取消（后续可加 AbortController）
+    locale
+  );
+
+  return {
+    type: 'classifyBookmarksResult',
+    batchIndex: request.batchIndex,
+    categories: result.categories,
+    uncategorized: result.uncategorized,
+    model: result.model,
+    usage: result.usage
+  };
 }
 
 let activeRequests = new Set();
