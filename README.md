@@ -26,9 +26,10 @@ Make bookmark management easy and enjoyable! A cute lazy cat assistant helps you
 - Understand your browsing habits
 
 ### 🛡️ Privacy Protection
-- 100% local operation, no internet connection needed
-- No collection of personal data
-- No uploading of bookmark information
+- Bookmark trees are analyzed locally; the extension does not send a bookmark export to a project backend.
+- Scanning for broken links sends requests to HTTP/HTTPS bookmark URLs. The destination can see the requested URL and your network address; these requests omit cookies and the referrer.
+- Generating a bookmark profile may request favicons from Google's service, which reveals the corresponding domain to Google; Chrome's built-in favicon service is the fallback.
+- These features require network access. Avoid scanning sensitive bookmarks or generating a profile if you do not want their URLs or domains disclosed.
 - Fully open source, trustworthy
 
 ## 🌟 Highlights
